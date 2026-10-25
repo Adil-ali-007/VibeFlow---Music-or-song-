@@ -1,0 +1,6 @@
+{
+  "name": "VibeFlow",
+  "description": "Discover songs, albums, and artists, build playlists, and enjoy seamless music streaming.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

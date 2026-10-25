@@ -1,0 +1,965 @@
+# MASTER PROMPT — Build VibeFlow, a Secure Full-Stack Music Streaming Platform
+
+Act as a senior full-stack engineer, software architect, security engineer, UI/UX designer, and technical writer.
+
+Build a complete, production-minded music streaming web application inspired by Spotify's usability and visual quality. The project name is **VibeFlow**.
+
+Do not just generate a beautiful frontend or a collection of disconnected files. Build a working application with a properly connected frontend, backend, database, authentication system, music discovery service, player, admin functionality, testing, and documentation.
+
+The project must be understandable to a second-year computer science student learning MERN stack development. Write code that a real developer can read, explain, debug, and maintain.
+
+---
+
+## 1. Core rules
+
+Follow these requirements throughout the entire project.
+
+### No demo data
+
+- Do not populate the application with fake users, sample songs, artificial playlists, fake listening history, placeholder statistics, or fabricated API responses.
+- Do not seed the database with demonstration content.
+- Start with an empty database.
+- Display a clear empty state when a user has no playlists, favorites, or listening history.
+- Populate music search results only through the real configured music provider.
+- Never show fake success messages when an operation fails.
+- Do not hardcode sample API responses into production code.
+- Tests may use clearly isolated fixtures, mocks, or temporary test databases. They must never leak into the actual application.
+- If a provider or API is unavailable, show an honest error or an empty state.
+
+### Human-readable code and folder structure
+
+Organize the project like an experienced developer would organize a normal, maintainable software project.
+
+- Prefer a straightforward folder structure over excessive abstraction.
+- Use descriptive folder and file names.
+- Put related code together.
+- Keep each module focused on one responsibility.
+- Avoid unnecessarily deep folder nesting.
+- Do not create a separate folder, service, class, hook, or utility for every trivial operation.
+- Do not create dozens of tiny files simply to make the architecture look sophisticated.
+- Do not put the entire application into giant files either.
+- Keep route definitions, controllers, business logic, database models, validation, and middleware separated where that separation improves clarity.
+- Make it easy to trace a request from the frontend to the backend, then to the database or music provider.
+- Add short comments when they explain *why* something is done, rather than restating the code.
+- Keep naming consistent across the entire repository.
+- Follow conventional MERN project organization, not an unnecessarily complicated enterprise architecture.
+
+**The final folder structure must be practical, beginner-friendly, and understandable without needing an AI to explain every file.**
+
+Before creating files, present the proposed directory structure and explain the responsibility of each major folder. Then implement the project using that structure. Update the structure only when a real requirement justifies a change.
+
+---
+
+## 2. Technology stack
+
+Use the following stack unless a genuine technical limitation requires a clearly explained alternative.
+
+### Frontend
+
+- React
+- Vite
+- TypeScript
+- React Router
+- Tailwind CSS
+- Axios
+- A suitable lightweight state-management approach
+- Lucide React icons
+- An appropriate audio player implementation
+- Accessible forms and reusable UI components
+
+### Backend
+
+- Node.js
+- Express.js
+- TypeScript
+- MongoDB
+- Mongoose
+- Zod or another consistent validation library
+- Secure password hashing
+- Google OAuth / OpenID Connect
+- HTTP-only cookies or another carefully documented, secure authentication strategy
+
+### Music provider service
+
+- Python 3.10+
+- Flask
+- `ytmusicapi`
+
+The Python service must be a separate, clearly documented service. Express should communicate with it through a small provider adapter or dedicated client module.
+
+Use compatible, supported package versions. Verify installation instructions and APIs against official documentation instead of inventing package methods.
+
+---
+
+## 3. Spotify-inspired user interface
+
+Create an original, polished music application inspired by Spotify's general usability. Do not copy Spotify branding, logos, proprietary assets, or exact copyrighted visual assets.
+
+### Visual direction
+
+- Dark-first interface.
+- Clean spacing and clear typography.
+- Sidebar navigation.
+- Main discovery area.
+- Persistent bottom music player.
+- Responsive layouts for desktop, tablet, and mobile.
+- Smooth, subtle transitions.
+- Accessible contrast and visible focus indicators.
+- Loading, error, empty, and success states.
+- Avoid unnecessary animations and visual clutter.
+- Make theme transitions comfortable rather than abruptly flashing between light and dark modes.
+
+### Main pages
+
+Implement the following pages and connect them to real functionality:
+
+1. Landing or welcome page.
+2. Register and login page.
+3. Google sign-in flow.
+4. Home and music discovery.
+5. Search results.
+6. Track or song details where supported.
+7. Album or artist details where supported by the provider.
+8. User playlists.
+9. Playlist details.
+10. Liked songs.
+11. Listening history.
+12. User profile and account settings.
+13. Admin dashboard with server-enforced access control.
+14. Not-found page.
+
+Do not create routes that look functional but have no real implementation. If a feature depends on unavailable provider capabilities, clearly explain its limitation and present a useful alternative.
+
+---
+
+## 4. Authentication and user accounts
+
+Implement secure registration, login, logout, and Google authentication.
+
+### Email and password authentication
+
+- Validate email format.
+- Normalize email consistently.
+- Enforce password length and reasonable password policy.
+- Hash passwords using a suitable password-hashing algorithm.
+- Never store plaintext passwords.
+- Never return password hashes to the frontend.
+- Return clear, safe validation messages.
+- Prevent duplicate accounts.
+- Use consistent API response formats.
+- Protect authenticated routes.
+- Implement logout correctly, including invalidating the server-side session or refresh-token mechanism when applicable.
+- Handle expired sessions safely.
+- Rate-limit sensitive authentication endpoints.
+- Avoid revealing whether an email exists in contexts where that would enable account enumeration.
+
+### Google authentication
+
+Implement Google sign-in using an appropriate, supported OAuth 2.0 / OpenID Connect flow.
+
+Requirements:
+
+- Verify identity tokens on the backend using a trusted library and Google's supported verification process.
+- Validate token signature, issuer, audience, expiry, and required claims.
+- Use Google's stable `sub` identifier to identify the Google account.
+- Verify the email claim when relying on it for email-related account operations.
+- Never trust an email, role, or user ID supplied by the browser.
+- Never accept an unverified identity token.
+- Do not automatically link accounts solely because their email strings match.
+- Require a secure, explicit account-linking process where needed.
+- Use state and nonce protections where appropriate for the selected flow.
+- Keep client secrets on the server.
+- Use secure redirect URI configuration.
+- Configure CORS and cookies correctly for the deployment environment.
+- Explain local development and production callback URLs in the documentation.
+
+If Google credentials are missing, display a clear configuration message in development. Do not simulate a successful Google login.
+
+---
+
+## 5. Admin account and role security
+
+Configure the initial administrator through environment variables.
+
+Use:
+
+- `ADMIN_EMAIL`
+- `ADMIN_INITIAL_PASSWORD`
+
+The intended administrator email is `adil23494@gmail.com`.
+
+**Never place the actual password shared in the conversation into source code, prompts committed to Git, documentation, or environment-example files. Rotate that exposed password and set a new secret privately in your local environment.**
+
+Implement a dedicated, one-time bootstrap command, for example:
+
+`npm run admin:bootstrap`
+
+The command must:
+
+- Read administrator configuration from the environment.
+- Validate all required values.
+- Create the administrator only when the intended conditions are met.
+- Hash the initial password before storing it.
+- Be safe to run more than once.
+- Never silently overwrite an existing password.
+- Never promote an existing account merely because its email matches.
+- Explain clearly when an administrator already exists or configuration is incomplete.
+- Never print passwords, password hashes, access tokens, or other secrets.
+
+Public registration must always assign the ordinary user role on the server.
+
+Never allow the client to select or modify its own role.
+
+Google login must not automatically grant administrator privileges. If the configured administrator uses Google authentication, require an explicit, secure, documented provisioning process.
+
+### Admin dashboard
+
+Implement meaningful administrative functions, such as:
+
+- View registered-user information with appropriate privacy restrictions.
+- Review operational status and provider connectivity.
+- View safe system-health information.
+- Perform authorized user-management actions only when explicitly implemented and audited.
+
+Every admin API must enforce authorization on the server. Hiding admin buttons in React is not authorization.
+
+Do not invent fake analytics or fabricated user statistics.
+
+---
+
+## 6. Music search and discovery using ytmusicapi
+
+Create a separate Python Flask service that uses `ytmusicapi` for supported YouTube Music search and metadata operations.
+
+### Suggested responsibilities
+
+- Search for tracks.
+- Retrieve supported track metadata.
+- Retrieve artist or album information where supported.
+- Return normalized JSON responses.
+- Validate request parameters.
+- Handle empty results.
+- Handle upstream failures and timeouts.
+- Log useful diagnostics without logging credentials or sensitive data.
+
+Keep provider-specific code isolated so another provider can be integrated later without rewriting the entire application.
+
+### Architecture
+
+The normal request flow should be:
+
+React frontend → Express API → music provider adapter → Python Flask service → `ytmusicapi`
+
+Express remains responsible for application authentication, authorization, playlists, favorites, listening history, and database operations.
+
+The Python service should not be allowed to bypass application-level authorization for private user data.
+
+Protect internal service communication where appropriate. Validate input on both the Express and Python sides, and configure request timeouts.
+
+### Playback limitations
+
+Do not assume that searching YouTube Music automatically provides a legally usable direct audio stream.
+
+- Use only playback mechanisms that are supported by the source and permitted by its terms.
+- Prefer an authorized embed or player where appropriate.
+- Do not build an unauthorized audio extractor, bypass access restrictions, or circumvent advertising or DRM.
+- Do not claim that a song can be played when the provider only returns metadata.
+- If playback is unavailable, display a clear explanation and an authorized link or supported alternative.
+- Keep the player interface honest about loading, buffering, errors, and unsupported playback.
+
+Document the difference between metadata search and actual audio playback.
+
+---
+
+## 7. Real application features
+
+### Search
+
+- Search music through the configured provider.
+- Support loading, no-results, error, and retry states.
+- Debounce repeated user input where appropriate.
+- Validate search parameters.
+- Do not invent results when the provider fails.
+
+### Music player
+
+Implement the player controls supported by the selected playback source:
+
+- Play and pause.
+- Seek when supported.
+- Volume control when supported.
+- Current position and duration when available.
+- Previous and next track when a real queue exists.
+- Repeat and shuffle only if implemented correctly.
+- Track title, artist, and available artwork.
+- Loading, buffering, and playback-error states.
+
+Synchronize the player UI with actual playback state rather than changing icons without controlling playback.
+
+### Playlists
+
+Authenticated users should be able to:
+
+- Create a playlist.
+- Rename a playlist.
+- View a playlist.
+- Add tracks when the provider supplies sufficient track identifiers and metadata.
+- Remove tracks.
+- Delete their own playlists.
+- See empty states for playlists without tracks.
+
+Verify playlist ownership on every relevant backend operation.
+
+### Favorites
+
+- Add a track to favorites.
+- Remove a track from favorites.
+- View liked songs.
+- Prevent duplicate favorite entries.
+- Persist favorites in MongoDB.
+- Scope favorites to the authenticated user.
+
+### Listening history
+
+- Record a listening event only when the relevant playback condition is genuinely met.
+- Avoid recording fake playback events.
+- Let users view and clear their own history.
+- Enforce ownership and privacy rules.
+
+### User settings
+
+- View and update permitted profile fields.
+- Provide secure logout.
+- Explain account-linking options.
+- Never expose internal secrets or sensitive authentication fields.
+
+---
+
+## 8. MongoDB design
+
+Use Mongoose models that match actual application requirements.
+
+Potential collections include:
+
+- `User`
+- `Playlist`
+- `ListeningHistory`
+
+Favorites can be represented in a separate collection or as a suitable user-related data structure. Choose one approach, explain the trade-offs, and avoid duplicating the same data unnecessarily.
+
+For every model, document:
+
+- Fields and types.
+- Required fields.
+- Validation.
+- Unique constraints and indexes.
+- Relationships and ownership.
+- Creation and update timestamps.
+- Any deletion or retention behavior.
+
+Use stable provider identifiers where available. Avoid treating song titles as unique identifiers.
+
+Design indexes deliberately. Handle duplicate-key errors cleanly, and document any migration or index-management steps.
+
+Do not store passwords, access tokens, Google client secrets, or unnecessary provider credentials in playlists, history, or user-facing responses.
+
+---
+
+## 9. Backend API design
+
+Create a clear REST API using Express.
+
+Organize endpoints into logical route groups, such as:
+
+- `/api/auth`
+- `/api/users`
+- `/api/search`
+- `/api/playlists`
+- `/api/favorites`
+- `/api/history`
+- `/api/admin`
+- `/api/health`
+
+These are suggested route groups; avoid creating routes that have no implemented functionality.
+
+For each implemented endpoint, define:
+
+- HTTP method and path.
+- Authentication requirements.
+- Authorization requirements.
+- Request validation.
+- Expected request body or query parameters.
+- Success response.
+- Relevant error responses.
+- Side effects.
+
+Use a consistent response format, for example:
+
+Success:
+
+`{ "success": true, "data": {} }`
+
+Error:
+
+`{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "Please check your input." } }`
+
+Adapt the response structure where necessary, but use one consistent convention.
+
+Use appropriate HTTP status codes. Never send stack traces, database internals, passwords, tokens, or sensitive provider errors to the browser.
+
+---
+
+## 10. Security and validation
+
+Create a substantial root-level `SECURITY.md` that documents the real security design and its limitations.
+
+It must include:
+
+1. Security goals and application boundaries.
+2. Threat model and assets to protect.
+3. Authentication and session strategy.
+4. Password handling.
+5. Google OAuth/OIDC verification.
+6. Admin bootstrap and role authorization.
+7. Request validation.
+8. Authentication and API rate limiting.
+9. CORS and CSRF considerations.
+10. Cookie settings.
+11. XSS and output handling.
+12. MongoDB/Mongoose injection prevention.
+13. IDOR and ownership checks.
+14. Secret management.
+15. Internal Python service protection.
+16. SSRF and unsafe URL handling where applicable.
+17. Error handling and safe logging.
+18. Dependency security and updates.
+19. Security headers and HTTPS.
+20. Data privacy and retention.
+21. Production deployment security.
+22. Security testing and verification.
+23. Incident response and responsible vulnerability reporting.
+24. Known limitations and remaining risks.
+
+Implement appropriate protections in code; do not merely describe them in documentation.
+
+At minimum:
+
+- Validate and sanitize untrusted input appropriately.
+- Use server-side authorization checks.
+- Add secure HTTP headers.
+- Configure CORS with explicit allowed origins.
+- Use secure cookie attributes in production.
+- Add rate limits to authentication and sensitive endpoints.
+- Prevent mass assignment by explicitly selecting permitted update fields.
+- Validate ownership before modifying or deleting private resources.
+- Avoid exposing stack traces in production.
+- Never commit `.env` files or real credentials.
+- Keep `.env.example` free of actual secrets.
+- Avoid logging passwords, cookies, authorization headers, tokens, or full sensitive request bodies.
+- Use HTTPS in production.
+- Document CSRF protections if cookie-based authentication is used.
+- Keep dependencies updated and audit them.
+
+Do not claim the application is completely secure. Document what has actually been implemented, what has been tested, and what still requires review.
+
+---
+
+## 11. Folder structure: normal, clean, and understandable
+
+Before implementation, design a folder structure that balances readability with maintainability.
+
+Use a simple monorepo structure with separate frontend, backend, and Python service directories.
+
+A suggested starting point is:
+
+```text
+vibeflow/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── layouts/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── context/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── .env.example
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── services/
+│   │   ├── validators/
+│   │   ├── utils/
+│   │   ├── app.ts
+│   │   └── server.ts
+│   ├── tests/
+│   ├── .env.example
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── music-service/
+│   ├── app/
+│   │   ├── routes.py
+│   │   ├── music_provider.py
+│   │   └── config.py
+│   ├── tests/
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── run.py
+│
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── SYSTEM_DESIGN.md
+│   ├── API.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── AUTHENTICATION.md
+│   ├── DEPLOYMENT.md
+│   └── TROUBLESHOOTING.md
+│
+├── scripts/
+│   └── README.md
+├── .github/
+│   └── workflows/
+├── .gitignore
+├── .editorconfig
+├── .env.example
+├── README.md
+├── SECURITY.md
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+├── LICENSE
+└── package.json
+```
+
+This structure is a starting point, not a requirement to create every file regardless of need.
+
+Adjust it when necessary, but explain why the change makes the application easier to maintain.
+
+### Folder structure rules
+
+- Do not create empty folders just to match the diagram.
+- Do not create empty files to make the repository look complete.
+- Do not create unnecessary layers such as repositories, factories, managers, adapters, and interfaces when ordinary services and controllers are sufficient.
+- Do not move simple code into separate files without a meaningful reason.
+- Avoid circular imports.
+- Keep environment configuration centralized and clearly documented.
+- Keep UI components separate from page-level components where useful.
+- Keep API calls out of large JSX components.
+- Keep authentication middleware reusable and understandable.
+- Keep database models separate from controllers.
+- Keep Python provider logic separate from HTTP route definitions.
+- Add tests close to the relevant service or in clearly organized test folders.
+- Ensure import paths, scripts, and configuration files actually match the final structure.
+
+### Explain the code flow
+
+Document a few common flows in beginner-friendly language:
+
+**Login flow:** React form → Express auth route → validation → authentication service → MongoDB → session or token handling → frontend state.
+
+**Search flow:** React search page → Express search endpoint → provider adapter → Flask service → `ytmusicapi` → normalized result → React UI.
+
+**Playlist flow:** React playlist page → authenticated Express route → ownership check → Mongoose operation → response → updated UI.
+
+For each flow, mention the actual files involved. Keep this explanation synchronized with the implemented code.
+
+---
+
+## 12. Root-level documentation
+
+Create useful, accurate documentation.
+
+### `README.md`
+
+Include:
+
+- Project name and overview.
+- Features that actually work.
+- Technology stack.
+- Architecture overview.
+- Folder structure.
+- Prerequisites.
+- Installation instructions for Windows PowerShell and a general Unix-like shell where practical.
+- Environment-variable setup.
+- MongoDB setup.
+- Google OAuth setup.
+- Admin bootstrap process.
+- Python music-service setup.
+- How to start each service.
+- How to run tests and linting.
+- Troubleshooting.
+- Deployment overview.
+- Security notes.
+- Known limitations.
+
+Do not claim that features are implemented until they have been verified.
+
+### `ARCHITECTURE.md`
+
+Explain service responsibilities, module boundaries, dependency direction, authentication, provider integration, and important design decisions.
+
+### `SYSTEM_DESIGN.md`
+
+Explain:
+
+- System components.
+- Data flow.
+- API flow.
+- Database relationships.
+- Authentication and authorization.
+- Music-provider integration.
+- Failure handling.
+- Scaling considerations.
+- Security boundaries.
+
+Use simple Mermaid diagrams where they clarify the design.
+
+### `API.md`
+
+Document implemented endpoints, methods, request parameters, validation, authentication, status codes, and example responses. Keep examples clearly labeled and never use real secrets.
+
+### `DATABASE_SCHEMA.md`
+
+Document models, fields, constraints, indexes, relationships, and ownership rules.
+
+### `AUTHENTICATION.md`
+
+Explain email/password login, Google authentication, sessions or tokens, logout, protected routes, admin provisioning, and common troubleshooting steps.
+
+### `SECURITY.md`
+
+Include the security requirements described in Section 10, aligned with the real implementation.
+
+### `CONTRIBUTING.md`
+
+Explain local setup, code style, branch and commit conventions, testing, and pull-request expectations.
+
+### `CHANGELOG.md`
+
+Record meaningful changes as the application evolves. Do not fabricate a release history.
+
+### `DEPLOYMENT.md`
+
+Explain how to deploy the frontend, Express backend, MongoDB, and Python music service, including environment variables, HTTPS, CORS, and callback URLs.
+
+### `TROUBLESHOOTING.md`
+
+Include realistic troubleshooting guidance for connection failures, MongoDB issues, OAuth configuration, CORS, environment variables, port conflicts, provider errors, and playback limitations.
+
+### License
+
+Choose a suitable license only after the intended distribution and dependencies have been considered. Do not falsely claim that the application owns third-party assets or provider content.
+
+---
+
+## 13. Environment variables and secrets
+
+Create appropriate `.env.example` files for the root, frontend, backend, and Python service where needed.
+
+Use placeholders only. Never include real credentials.
+
+Possible backend variables include:
+
+```dotenv
+NODE_ENV=development
+PORT=8000
+MONGODB_URI=
+SESSION_SECRET=
+JWT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=
+FRONTEND_URL=http://localhost:5173
+MUSIC_SERVICE_URL=http://localhost:5001
+ADMIN_EMAIL=adil23494@gmail.com
+ADMIN_INITIAL_PASSWORD=
+```
+
+Choose either a session-based or token-based authentication design and remove unused variables. Do not keep both mechanisms merely for appearance.
+
+Possible frontend variables:
+
+```dotenv
+VITE_API_URL=http://localhost:8000/api
+```
+
+Possible Python variables:
+
+```dotenv
+FLASK_ENV=development
+PORT=5001
+```
+
+Follow the framework's current configuration conventions. Do not expose backend secrets through frontend `VITE_` variables.
+
+Ensure `.gitignore` excludes:
+
+- `.env` and secret-bearing environment files.
+- `node_modules/`
+- Python virtual environments.
+- Build output.
+- Test artifacts.
+- Logs.
+- Local databases and temporary files.
+- Credentials and private keys.
+
+Include an example of how to set the initial admin password privately in PowerShell without writing it into a tracked file. Explain that shell history and process environments can have their own exposure risks, and recommend a suitable local secret-management method.
+
+---
+
+## 14. Testing and quality
+
+Write tests for important behavior, not merely tests that assert a constant or mock every meaningful operation.
+
+### Backend tests
+
+Test:
+
+- Registration validation.
+- Password hashing.
+- Duplicate-account handling.
+- Login success and failure.
+- Logout and session/token invalidation where applicable.
+- Google identity verification logic.
+- Protected routes.
+- Admin-only access.
+- Playlist creation and ownership.
+- Favorite creation and duplicate prevention.
+- Listening-history privacy.
+- Request validation.
+- Consistent error handling.
+
+### Python service tests
+
+Test:
+
+- Valid search requests.
+- Invalid parameters.
+- Empty results.
+- Provider exceptions.
+- Timeout or failure handling.
+- Response normalization.
+
+Keep external network calls out of deterministic unit tests.
+
+### Frontend tests
+
+Test the important user journeys:
+
+- Registration and login form validation.
+- Authentication error messages.
+- Protected route behavior.
+- Search loading, success, empty, and error states.
+- Playlist and favorites interactions.
+- Player behavior where the chosen playback implementation can be tested.
+
+### Quality commands
+
+Configure suitable scripts for:
+
+- Development.
+- Production build.
+- Tests.
+- Linting.
+- Formatting.
+- Type checking.
+- Security/dependency audits.
+
+Use real commands supported by the selected tools and package versions. Do not report a test as passing unless it was actually executed successfully.
+
+---
+
+## 15. Deployment and operations
+
+Provide a practical deployment plan for each service.
+
+Document:
+
+- Production environment variables.
+- MongoDB connection and access controls.
+- Frontend and backend URLs.
+- Google OAuth authorized origins and redirect URIs.
+- CORS settings.
+- Secure cookies and HTTPS.
+- Python service URL and network restrictions.
+- Build and start commands.
+- Health checks.
+- Logging and safe diagnostics.
+- Dependency update strategy.
+- Backup and recovery considerations.
+
+Use Docker Compose only if it makes local development or deployment simpler. If you add it, ensure the services, ports, environment variables, health checks, and dependencies match the actual application.
+
+Never assume localhost URLs work in production.
+
+---
+
+## 16. Implementation workflow
+
+Work in the following sequence. Do not attempt to generate the entire application as one giant, unverified code dump.
+
+### Phase 1 — Plan
+
+1. Confirm the requirements.
+2. Present the proposed folder structure.
+3. Explain the responsibility of each major directory.
+4. Present the architecture and request flows.
+5. Identify third-party provider limitations.
+6. List required environment variables.
+7. Define a practical implementation checklist.
+
+### Phase 2 — Project setup
+
+1. Create the monorepo structure.
+2. Configure React, Vite, TypeScript, and Tailwind.
+3. Configure Express, TypeScript, and Mongoose.
+4. Set up the Flask service.
+5. Configure environment validation.
+6. Configure linting, formatting, and tests.
+7. Create `.gitignore` and safe environment examples.
+
+### Phase 3 — Backend foundation
+
+1. Connect MongoDB.
+2. Create models and indexes.
+3. Implement validation.
+4. Implement error handling.
+5. Implement authentication and authorization.
+6. Implement admin bootstrap.
+7. Add security middleware and rate limits.
+8. Add backend tests.
+
+### Phase 4 — Google login
+
+1. Configure Google OAuth/OIDC.
+2. Verify identities server-side.
+3. Implement secure callbacks and sessions or tokens.
+4. Protect account-linking operations.
+5. Test successful and failed authentication.
+
+### Phase 5 — Music provider
+
+1. Build the Python Flask service.
+2. Integrate `ytmusicapi`.
+3. Normalize provider responses.
+4. Connect Express through a provider adapter.
+5. Add timeouts, validation, and error handling.
+6. Verify the provider's actual capabilities.
+7. Document playback limitations.
+
+### Phase 6 — Frontend
+
+1. Build the shared layout.
+2. Implement authentication screens.
+3. Implement protected routing.
+4. Implement home and search.
+5. Implement playlists and favorites.
+6. Implement listening history.
+7. Integrate the player with actual supported playback.
+8. Implement account settings and admin pages.
+9. Add responsive layouts, loading states, and accessible error states.
+
+### Phase 7 — Verification
+
+1. Install dependencies.
+2. Run type checks.
+3. Run linting.
+4. Run automated tests.
+5. Build the frontend and backend.
+6. Start all services.
+7. Test the actual end-to-end flows.
+8. Verify that the database starts empty.
+9. Verify that unauthorized users cannot access protected resources.
+10. Check that no secrets or fabricated data are present.
+
+### Phase 8 — Documentation
+
+1. Write the root README.
+2. Write architecture and system-design documentation.
+3. Document the API and database schema.
+4. Complete `SECURITY.md`.
+5. Write authentication, deployment, contribution, and troubleshooting guides.
+6. Ensure documentation matches the final code and scripts.
+
+---
+
+## 17. How to work with the developer
+
+I am learning MERN stack and want to understand the project, not just receive generated code.
+
+Therefore:
+
+- Explain important decisions in simple, technically correct language.
+- Use real file paths when explaining changes.
+- Explain why a file exists and what calls it.
+- Prefer understandable implementations over unnecessary cleverness.
+- Avoid generating code that relies on unexplained hidden assumptions.
+- Explain how to reproduce and diagnose errors.
+- For important features, show the request flow from frontend to backend and database.
+- Use small, focused implementation steps.
+- Do not silently replace existing working code.
+- Inspect existing files before modifying an existing project.
+- Do not invent files, functions, test results, API behavior, or provider capabilities.
+- If something cannot be verified, state the limitation and explain how to verify it.
+- When fixing a bug, explain the root cause and the specific change.
+- Keep documentation updated when behavior changes.
+
+Do not sacrifice code quality to minimize token usage, but avoid unnecessary repetition, excessive abstractions, and redundant documentation.
+
+---
+
+## 18. Final acceptance checklist
+
+The project is ready to be called complete only when the relevant items below have been implemented and verified.
+
+- [ ] Clean, human-readable folder structure.
+- [ ] Working React frontend.
+- [ ] Working Express backend.
+- [ ] Working MongoDB connection.
+- [ ] Real registration, login, and logout.
+- [ ] Secure Google authentication.
+- [ ] Safe initial administrator provisioning.
+- [ ] Server-enforced authorization.
+- [ ] Real provider-backed music search.
+- [ ] Honest playback capabilities and limitations.
+- [ ] Working playlists and favorites.
+- [ ] Private listening history.
+- [ ] Responsive, accessible UI.
+- [ ] No production demo data.
+- [ ] Empty database and useful empty states.
+- [ ] Environment variables and secret handling.
+- [ ] Root-level `SECURITY.md`.
+- [ ] Complete, accurate project documentation.
+- [ ] Meaningful automated tests.
+- [ ] Successful build and type checks.
+- [ ] End-to-end verification of implemented features.
+- [ ] No falsely reported successes or unverified claims.
+- [ ] No committed credentials.
+- [ ] Clear setup and deployment instructions.
+
+At the end, provide:
+
+1. The final folder tree.
+2. A summary of implemented features.
+3. The exact setup commands for Windows PowerShell.
+4. The required environment variables.
+5. The admin bootstrap procedure.
+6. The commands to run all services.
+7. The tests and build commands actually executed, with their real results.
+8. Any known limitations or incomplete work.
+9. A concise explanation of the most important request flows.
+10. A checklist for future development.
+
+**Start with Phase 1. Inspect the existing repository if one is provided. If no repository exists, propose the folder structure and architecture first, then implement the project in small, verifiable phases. Do not claim that anything has been implemented or tested until it actually has been.**
